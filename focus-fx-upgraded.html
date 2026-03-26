@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>FOCUS FX AUTO TRADERS</title>
+<style>
+:root {
+  --bg: #060d14; --bg2: #0a1520; --bg3: #0e1e2e;
+  --border: #1a3a5c; --accent: #00e5c8; --accent2: #00b8a0;
+  --text: #c8e8f0; --text2: #7ab0c8; --text3: #3a6888;
+  --live: #00ff88; --danger: #ff4466; --warn: #ffaa00; --card: #0c1a28;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Courier New', monospace; min-height: 100vh; font-size: 13px; }
+
+/* GATE */
+#gate { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 100vh; padding: 24px; }
+.gate-logo { font-size: 20px; font-weight: 700; letter-spacing: 4px; color: var(--accent); text-align: center; margin-bottom: 6px; }
+.gate-sub { font-size: 10px; letter-spacing: 3px; color: var(--text3); margin-bottom: 32px; text-align: center; }
+.gate-card { background: var(--card); border: 1px solid var(--border); border-radius: 4px; padding: 28px; width: 100%; max-width: 420px; }
+.gate-label { font-size: 10px; letter-spacing: 3px; color: var(--text3); margin-bottom: 8px; }
+.engine-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 20px; }
+.engine-btn { background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 10px 8px; font-family: inherit; font-size: 11px; letter-spacing: 1px; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.engine-btn:hover, .engine-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(0,229,200,0.07); }
+.free-key-note { font-size: 10px; color: var(--text3); margin-bottom: 16px; line-height: 1.8; }
+.free-key-note a { color: var(--accent2); text-decoration: none; }
+.gate-input { width: 100%; background: var(--bg2); border: 1px solid var(--border); color: var(--text); padding: 12px 14px; font-family: inherit; font-size: 12px; border-radius: 2px; margin-bottom: 6px; outline: none; }
+.gate-input:focus { border-color: var(--accent); }
+.gate-input.error { border-color: var(--danger); }
+.gate-err { font-size: 10px; color: var(--danger); margin-bottom: 14px; letter-spacing: 1px; display: none; }
+.enter-btn { width: 100%; background: transparent; border: 1px solid var(--accent); color: var(--accent); padding: 14px; font-family: inherit; font-size: 12px; letter-spacing: 4px; cursor: pointer; border-radius: 2px; margin-top: 8px; transition: all 0.2s; }
+.enter-btn:hover { background: rgba(0,229,200,0.1); }
+
+/* APP */
+#app { display: none; flex-direction: column; min-height: 100vh; }
+.header { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-bottom: 1px solid var(--border); background: var(--bg2); }
+.logo-wrap { display: flex; align-items: center; gap: 10px; }
+.logo-icon { width: 32px; height: 32px; border: 1px solid var(--accent); border-radius: 2px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 16px; }
+.logo-text { font-size: 13px; font-weight: 700; letter-spacing: 3px; color: var(--accent); line-height: 1.3; }
+.logo-text span { display: block; font-size: 11px; }
+.header-right { display: flex; align-items: center; gap: 10px; }
+.live-badge { display: flex; align-items: center; gap: 6px; font-size: 11px; letter-spacing: 2px; color: var(--text2); }
+.live-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--live); animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+.ai-badge { border: 1px solid var(--border); padding: 6px 10px; font-size: 10px; letter-spacing: 2px; color: var(--accent); text-align: center; line-height: 1.5; border-radius: 2px; }
+.section-bar { display: flex; align-items: center; gap: 10px; padding: 10px 16px; border-bottom: 1px solid var(--border); font-size: 10px; letter-spacing: 3px; color: var(--text3); }
+.toolbar { display: flex; gap: 8px; padding: 10px 16px; border-bottom: 1px solid var(--border); flex-wrap: wrap; }
+.tb-btn { flex: 1; min-width: 90px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 9px 10px; font-family: inherit; font-size: 10px; letter-spacing: 2px; cursor: pointer; border-radius: 2px; transition: all 0.2s; }
+.tb-btn.active { background: rgba(0,229,200,0.08); border-color: var(--accent); color: var(--accent); }
+.tb-btn:hover { border-color: var(--accent2); color: var(--accent2); }
+.main { display: flex; }
+.chart-panel { width: 140px; flex-shrink: 0; border-right: 1px solid var(--border); padding: 12px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.panel-label { font-size: 9px; letter-spacing: 3px; color: var(--text3); display: flex; align-items: center; gap: 5px; width: 100%; }
+.panel-label::before { content: '·'; font-size: 14px; }
+.chart-drop { width: 100%; aspect-ratio: 1; border: 1px dashed var(--border); display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; cursor: pointer; border-radius: 2px; transition: border-color 0.2s; position: relative; overflow: hidden; background: var(--bg3); }
+.chart-drop:hover { border-color: var(--accent); }
+.chart-drop.has-img { border-style: solid; border-color: var(--accent); }
+.chart-drop img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: none; }
+.chart-drop.has-img img { display: block; }
+.chart-drop.has-img .drop-hint { display: none; }
+.drop-icon { font-size: 20px; color: var(--text3); }
+.drop-txt { font-size: 9px; letter-spacing: 1px; color: var(--text3); text-align: center; line-height: 1.6; }
+#file-input { display: none; }
+.fmt-list { font-size: 8px; color: var(--text3); letter-spacing: 1px; line-height: 1.9; width: 100%; }
+.params-panel { flex: 1; padding: 14px; }
+.params-title { font-size: 10px; letter-spacing: 3px; color: var(--accent); margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+.params-title::before { content: '●'; font-size: 8px; }
+.param-row { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.param-label { font-size: 9px; letter-spacing: 3px; color: var(--text3); margin-bottom: 6px; }
+.param-select { width: 100%; background: var(--bg3); border: 1px solid var(--border); color: var(--text); padding: 10px 12px; font-family: inherit; font-size: 12px; border-radius: 2px; outline: none; cursor: pointer; -webkit-appearance: none; }
+.param-select:focus { border-color: var(--accent); }
+.param-textarea { width: 100%; height: 78px; background: var(--bg3); border: 1px solid var(--border); color: var(--text2); padding: 10px 12px; font-family: inherit; font-size: 11px; border-radius: 2px; outline: none; resize: none; margin-bottom: 12px; }
+.param-textarea:focus { border-color: var(--accent); }
+.param-textarea::placeholder { color: var(--text3); }
+.analyze-btn { width: 100%; padding: 15px; background: transparent; border: 1px solid var(--accent); color: var(--accent); font-family: inherit; font-size: 12px; letter-spacing: 4px; cursor: pointer; border-radius: 2px; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+.analyze-btn:hover:not(:disabled) { background: rgba(0,229,200,0.1); }
+.analyze-btn:disabled { border-color: var(--text3); color: var(--text3); cursor: not-allowed; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0.5} }
+.results-section { border-top: 1px solid var(--border); padding: 14px; }
+.results-header { font-size: 9px; letter-spacing: 3px; color: var(--text3); margin-bottom: 14px; }
+.awaiting { display: flex; flex-direction: column; align-items: center; padding: 28px 16px; gap: 10px; }
+.awaiting-icon { font-size: 28px; color: var(--text3); }
+.awaiting-text { font-size: 10px; letter-spacing: 2px; color: var(--text3); text-align: center; line-height: 1.9; }
+.result-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
+.result-card { background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; padding: 10px 12px; }
+.result-card.full { grid-column: 1/-1; }
+.rc-label { font-size: 8px; letter-spacing: 3px; color: var(--text3); margin-bottom: 6px; }
+.rc-val { font-size: 13px; letter-spacing: 1px; color: var(--text); }
+.rc-val.sm { font-size: 11px; line-height: 1.7; }
+.bull { color: var(--live) !important; }
+.bear { color: var(--danger) !important; }
+.neutral { color: var(--warn) !important; }
+.conf-bar { height: 4px; background: var(--bg2); border-radius: 2px; margin-top: 8px; overflow: hidden; }
+.conf-fill { height: 100%; background: var(--accent); border-radius: 2px; width: 0%; transition: width 1s ease; }
+.scan-line { height: 2px; overflow: hidden; margin: 10px 0; }
+.scan-line::after { content: ''; display: block; height: 100%; background: linear-gradient(90deg, transparent, var(--accent), transparent); animation: scan 1.5s linear infinite; }
+@keyframes scan { 0%{transform:translateX(-100%)}100%{transform:translateX(100%)} }
+.history-label { font-size: 9px; letter-spacing: 3px; color: var(--text3); margin: 12px 0 8px; }
+.history-item { background: var(--bg3); border: 1px solid var(--border); border-radius: 2px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; font-size: 10px; margin-bottom: 4px; }
+.h-time { color: var(--text3); }
+.h-pair { color: var(--text2); letter-spacing: 1px; }
+.footer { border-top: 1px solid var(--border); padding: 10px 16px; text-align: center; font-size: 8px; letter-spacing: 2px; color: var(--text3); line-height: 2; }
+.toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #100a18; border: 1px solid var(--danger); color: var(--danger); padding: 12px 20px; font-size: 11px; letter-spacing: 1px; border-radius: 2px; z-index: 999; display: none; max-width: 90vw; text-align: center; line-height: 1.6; }
+</style>
+</head>
+<body>
+
+<!-- GATE -->
+<div id="gate">
+  <div class="gate-logo">FOCUS FX AUTO TRADERS</div>
+  <div class="gate-sub">AI CHART ANALYSIS SYSTEM</div>
+  <div class="gate-card">
+    <div class="gate-label">SELECT AI ENGINE</div>
+    <div class="engine-grid">
+      <button class="engine-btn active" data-engine="gemini-2.0-flash-exp">Gemini 2.0 Flash</button>
+      <button class="engine-btn" data-engine="gemini-2.5-pro-exp-03-25">Gemini 2.5 Pro</button>
+      <button class="engine-btn" data-engine="gemini-1.5-pro">Gemini 1.5 Pro</button>
+      <button class="engine-btn" data-engine="gemini-1.5-flash">Gemini 1.5 Flash</button>
+    </div>
+    <div class="free-key-note">
+      FREE KEY &rarr; <a href="https://aistudio.google.com/app/apikey" target="_blank">aistudio.google.com</a><br>
+      No credit card needed. Key stored in your browser only.
+    </div>
+    <div class="gate-label">GEMINI API KEY</div>
+    <input type="password" id="gate-key" class="gate-input" placeholder="AIza...">
+    <div class="gate-err" id="gate-err">Please enter a valid API key</div>
+    <button class="enter-btn" id="enter-btn">ENTER SYSTEM &#9658;</button>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app">
+  <div class="header">
+    <div class="logo-wrap">
+      <div class="logo-icon">&#9672;</div>
+      <div class="logo-text">FOCUS FX <span>AUTO TRADERS</span></div>
+    </div>
+    <div class="header-right">
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+      <div class="ai-badge" id="ai-badge">AI &middot;<br>GEMINI 2.0</div>
+    </div>
+  </div>
+
+  <div class="section-bar">&mdash; CHART ANALYSIS SYSTEM</div>
+
+  <div class="toolbar">
+    <button class="tb-btn active" id="engine-lbl">GEMINI 2.0 FLASH</button>
+    <button class="tb-btn" id="sound-btn">&#128276; SOUND OFF</button>
+    <button class="tb-btn" id="change-key-btn">&#9881; CHANGE KEY</button>
+  </div>
+
+  <div class="main">
+    <div class="chart-panel">
+      <div class="panel-label">CHART INPUT</div>
+      <div class="chart-drop" id="chart-drop" onclick="document.getElementById('file-input').click()">
+        <img id="chart-preview" src="" alt="chart">
+        <div class="drop-hint">
+          <div class="drop-icon">&#9672;</div>
+          <div class="drop-txt">TAP TO<br>SELECT<br>CHART</div>
+        </div>
+      </div>
+      <input type="file" id="file-input" accept="image/png,image/jpeg,image/webp">
+      <div class="fmt-list">PNG &middot;<br>JPG &middot;<br>WEBP &middot;<br>Any<br>broker /<br>platform</div>
+    </div>
+
+    <div class="params-panel">
+      <div class="params-title">PARAMETERS</div>
+      <div class="param-row">
+        <div>
+          <div class="param-label">BROKER</div>
+          <select class="param-select" id="p-broker">
+            <option>DERIV</option><option>HF MARKETS</option><option>EXNESS</option>
+            <option>XM</option><option>WELTRADE</option><option>FBS</option>
+            <option>IC MARKETS</option><option>PEPPERSTONE</option><option>OTHER</option>
+          </select>
+        </div>
+        <div>
+          <div class="param-label">TIMEFRAME</div>
+          <select class="param-select" id="p-tf">
+            <option>M1</option><option>M5</option><option>M15</option>
+            <option selected>M30</option><option>H1</option><option>H4</option>
+            <option>D1</option><option>W1</option>
+          </select>
+        </div>
+      </div>
+      <div class="param-row">
+        <div>
+          <div class="param-label">INSTRUMENT</div>
+          <select class="param-select" id="p-inst">
+            <option>AUTO-DETECT</option>
+            <option>EURUSD</option><option>GBPUSD</option><option>USDJPY</option>
+            <option>AUDUSD</option><option>USDCAD</option><option>USDCHF</option><option>NZDUSD</option>
+            <option>EURJPY</option><option>GBPJPY</option><option>EURGBP</option>
+            <option>AUDJPY</option><option>CHFJPY</option>
+            <option>US30</option><option>US500</option><option>NAS100</option>
+            <option>GER40</option><option>UK100</option>
+            <option>XAUUSD</option><option>XAGUSD</option><option>OIL</option>
+            <option>BTCUSD</option><option>ETHUSD</option>
+          </select>
+        </div>
+        <div>
+          <div class="param-label">ANALYSIS MODE</div>
+          <select class="param-select" id="p-mode">
+            <option>STANDARD</option><option>SCALPING</option><option>SWING</option>
+            <option>PRICE ACTION</option><option>SMC / ICT</option>
+          </select>
+        </div>
+      </div>
+      <div class="param-label">EXTRA CONTEXT (optional)</div>
+      <textarea class="param-textarea" id="p-context" placeholder="e.g. major news event upcoming, key level at 1.2345, previous session was bearish..."></textarea>
+      <button class="analyze-btn" id="analyze-btn">&#128269; ANALYZE CHART</button>
+    </div>
+  </div>
+
+  <div class="results-section">
+    <div class="results-header">&#9672; &nbsp;ANALYSIS RESULT</div>
+
+    <div id="awaiting-box">
+      <div class="awaiting">
+        <div class="awaiting-icon">&#9672;</div>
+        <div class="awaiting-text">AWAITING CHART INPUT<br><br>Upload a chart screenshot to begin analysis</div>
+      </div>
+    </div>
+
+    <div id="result-box" style="display:none">
+      <div class="scan-line" id="scan-anim" style="display:none"></div>
+      <div class="result-grid">
+        <div class="result-card">
+          <div class="rc-label">SIGNAL DIRECTION</div>
+          <div class="rc-val" id="r-dir">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">CONFIDENCE LEVEL</div>
+          <div class="rc-val" id="r-conf">&mdash;</div>
+          <div class="conf-bar"><div class="conf-fill" id="r-conf-bar"></div></div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">MTF BIAS</div>
+          <div class="rc-val sm" id="r-mtf">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">ENTRY ZONE</div>
+          <div class="rc-val sm" id="r-entry">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">STOP LOSS</div>
+          <div class="rc-val sm" id="r-sl">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">TAKE PROFIT</div>
+          <div class="rc-val sm" id="r-tp">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">MARKET STRUCTURE</div>
+          <div class="rc-val sm" id="r-struct">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">PRICE ACTION</div>
+          <div class="rc-val sm" id="r-pa">&mdash;</div>
+        </div>
+        <div class="result-card full">
+          <div class="rc-label">PATTERNS DETECTED</div>
+          <div class="rc-val sm" id="r-patterns">&mdash;</div>
+        </div>
+        <div class="result-card full">
+          <div class="rc-label">CONFLUENCE CHECKLIST</div>
+          <div class="rc-val sm" id="r-confluence">&mdash;</div>
+        </div>
+        <div class="result-card full">
+          <div class="rc-label">FULL ANALYSIS</div>
+          <div class="rc-val sm" id="r-full">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">RISK ASSESSMENT</div>
+          <div class="rc-val sm" id="r-risk">&mdash;</div>
+        </div>
+        <div class="result-card">
+          <div class="rc-label">INVALIDATION LEVELS</div>
+          <div class="rc-val sm" id="r-invalid">&mdash;</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="history-label">SCAN HISTORY</div>
+    <div id="history-list">
+      <div style="font-size:10px;color:var(--text3);padding:6px 0;letter-spacing:2px;">NO SCANS YET</div>
+    </div>
+  </div>
+
+  <div class="footer">
+    FOR EDUCATIONAL &amp; RESEARCH PURPOSES ONLY &middot; NOT FINANCIAL ADVICE<br>
+    ALWAYS USE PROPER RISK MANAGEMENT &middot; NEVER TRADE MORE THAN YOU CAN AFFORD TO LOSE<br>
+    FOCUS FX AUTO TRADERS &middot; AI POWERED &middot; RUNS 100% IN YOUR BROWSER
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+var apiKey = localStorage.getItem('ffx_key') || '';
+var engine = localStorage.getItem('ffx_engine') || 'gemini-2.0-flash-exp';
+var imgBase64 = null;
+var imgMime = 'image/jpeg';
+var soundOn = false;
+var scanHistory = [];
+
+var ENGINE_LABELS = {
+  'gemini-2.0-flash-exp':     ['GEMINI 2.0 FLASH', 'AI ·\nGEMINI 2.0'],
+  'gemini-2.5-pro-exp-03-25': ['GEMINI 2.5 PRO',   'AI ·\nGEMINI 2.5'],
+  'gemini-1.5-pro':           ['GEMINI 1.5 PRO',   'AI ·\nGEMINI 1.5'],
+  'gemini-1.5-flash':         ['GEMINI 1.5 FLASH', 'AI ·\nGEMINI 1.5'],
+};
+
+// Engine select buttons
+document.querySelectorAll('.engine-btn').forEach(function(btn) {
+  if (btn.dataset.engine === engine) btn.classList.add('active');
+  else btn.classList.remove('active');
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.engine-btn').forEach(function(b){ b.classList.remove('active'); });
+    btn.classList.add('active');
+    engine = btn.dataset.engine;
+    localStorage.setItem('ffx_engine', engine);
+  });
+});
+
+document.getElementById('enter-btn').addEventListener('click', function() {
+  var k = document.getElementById('gate-key').value.trim();
+  if (!k) {
+    document.getElementById('gate-key').classList.add('error');
+    document.getElementById('gate-err').style.display = 'block';
+    return;
+  }
+  apiKey = k;
+  localStorage.setItem('ffx_key', k);
+  showApp();
+});
+
+if (apiKey) showApp();
+
+function showApp() {
+  document.getElementById('gate').style.display = 'none';
+  var app = document.getElementById('app');
+  app.style.display = 'flex';
+  app.style.flexDirection = 'column';
+  updateEngineUI();
+}
+
+function updateEngineUI() {
+  var lbl = ENGINE_LABELS[engine] || ENGINE_LABELS['gemini-2.0-flash-exp'];
+  document.getElementById('engine-lbl').textContent = lbl[0];
+  document.getElementById('ai-badge').innerHTML = lbl[1].replace('\n','<br>');
+}
+
+document.getElementById('change-key-btn').addEventListener('click', function() {
+  localStorage.removeItem('ffx_key');
+  apiKey = '';
+  document.getElementById('gate-key').value = '';
+  document.getElementById('gate').style.display = 'flex';
+  document.getElementById('app').style.display = 'none';
+});
+
+document.getElementById('sound-btn').addEventListener('click', function() {
+  soundOn = !soundOn;
+  this.textContent = soundOn ? '🔔 SOUND ON' : '🔔 SOUND OFF';
+});
+
+// File upload
+document.getElementById('file-input').addEventListener('change', function(e) {
+  var file = e.target.files[0];
+  if (!file) return;
+  imgMime = file.type || 'image/jpeg';
+  var reader = new FileReader();
+  reader.onload = function(ev) {
+    var dataURL = ev.target.result;
+    imgBase64 = dataURL.split(',')[1];
+    document.getElementById('chart-preview').src = dataURL;
+    document.getElementById('chart-drop').classList.add('has-img');
+  };
+  reader.readAsDataURL(file);
+});
+
+// Drag & drop
+var dropEl = document.getElementById('chart-drop');
+dropEl.addEventListener('dragover', function(e) { e.preventDefault(); });
+dropEl.addEventListener('drop', function(e) {
+  e.preventDefault();
+  var file = e.dataTransfer.files[0];
+  if (file && file.type.startsWith('image/')) {
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(file);
+      document.getElementById('file-input').files = dt.files;
+    } catch(err) {}
+    imgMime = file.type;
+    var reader = new FileReader();
+    reader.onload = function(ev) {
+      imgBase64 = ev.target.result.split(',')[1];
+      document.getElementById('chart-preview').src = ev.target.result;
+      document.getElementById('chart-drop').classList.add('has-img');
+    };
+    reader.readAsDataURL(file);
+  }
+});
+
+// ANALYZE
+document.getElementById('analyze-btn').addEventListener('click', analyzeChart);
+
+async function analyzeChart() {
+  if (!imgBase64) { showToast('Please upload a chart image first.'); return; }
+  if (!apiKey)    { showToast('No API key. Use CHANGE KEY to re-enter.'); return; }
+
+  var broker  = document.getElementById('p-broker').value;
+  var tf      = document.getElementById('p-tf').value;
+  var inst    = document.getElementById('p-inst').value;
+  var mode    = document.getElementById('p-mode').value;
+  var context = document.getElementById('p-context').value.trim();
+
+  var btn = document.getElementById('analyze-btn');
+  btn.disabled = true;
+  btn.textContent = '⏳ ANALYZING...';
+  document.getElementById('scan-anim').style.display = 'block';
+  document.getElementById('awaiting-box').style.display = 'none';
+  document.getElementById('result-box').style.display = 'block';
+
+  var prompt = 'You are an expert forex/trading technical analyst. Analyze this trading chart image.\n\nChart details:\n- Broker: ' + broker + '\n- Timeframe: ' + tf + '\n- Instrument: ' + (inst === 'AUTO-DETECT' ? 'detect from chart' : inst) + '\n- Analysis Mode: ' + mode + (context ? '\n- Extra Context: ' + context : '') + '\n\nRespond ONLY with a raw JSON object (no markdown, no backticks, no explanation). Use this exact structure:\n{"direction":"BULLISH or BEARISH or NEUTRAL","confidence":75,"mtf_bias":"...","entry_zone":"...","stop_loss":"...","take_profit":"...","market_structure":"...","price_action":"...","patterns":"...","confluence":"...","full_analysis":"...","risk":"...","invalidation":"...","instrument":"..."}';
+
+  try {
+    var url = 'https://generativelanguage.googleapis.com/v1beta/models/' + engine + ':generateContent?key=' + apiKey;
+    var body = {
+      contents: [{
+        parts: [
+          { text: prompt },
+          { inline_data: { mime_type: imgMime, data: imgBase64 } }
+        ]
+      }],
+      generationConfig: { temperature: 0.2, maxOutputTokens: 1024 }
+    };
+
+    var res = await fetch(url, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body)
+    });
+
+    var data = await res.json();
+
+    if (!res.ok) {
+      var msg = (data && data.error && data.error.message) ? data.error.message : 'HTTP ' + res.status;
+      throw new Error(msg);
+    }
+
+    var raw = '';
+    if (data.candidates && data.candidates[0] && data.candidates[0].content &&
+        data.candidates[0].content.parts && data.candidates[0].content.parts[0]) {
+      raw = data.candidates[0].content.parts[0].text || '';
+    }
+    if (!raw) throw new Error('Empty response from API. Try again.');
+
+    // Strip markdown fences
+    var clean = raw.replace(/```json/gi,'').replace(/```/g,'').trim();
+
+    var parsed;
+    try {
+      parsed = JSON.parse(clean);
+    } catch(e) {
+      var match = clean.match(/\{[\s\S]*\}/);
+      if (match) {
+        parsed = JSON.parse(match[0]);
+      } else {
+        throw new Error('Could not parse AI response. Try again.');
+      }
+    }
+
+    displayResults(parsed, tf, inst);
+    addHistory(parsed, tf, inst);
+
+  } catch(err) {
+    showToast('Error: ' + err.message);
+    document.getElementById('scan-anim').style.display = 'none';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '🔍 ANALYZE CHART';
+  }
+}
+
+function displayResults(d, tf, inst) {
+  document.getElementById('scan-anim').style.display = 'none';
+
+  var dir = ((d.direction || '') + '').toUpperCase();
+  var dirEl = document.getElementById('r-dir');
+  if (dir === 'BULLISH') {
+    dirEl.textContent = '▲ BULLISH';
+    dirEl.className = 'rc-val bull';
+  } else if (dir === 'BEARISH') {
+    dirEl.textContent = '▼ BEARISH';
+    dirEl.className = 'rc-val bear';
+  } else {
+    dirEl.textContent = '◆ NEUTRAL';
+    dirEl.className = 'rc-val neutral';
+  }
+
+  var conf = parseInt(d.confidence) || 0;
+  document.getElementById('r-conf').textContent = conf + '%';
+  setTimeout(function(){ document.getElementById('r-conf-bar').style.width = conf + '%'; }, 100);
+
+  document.getElementById('r-mtf').textContent      = d.mtf_bias        || '—';
+  document.getElementById('r-entry').textContent    = d.entry_zone      || '—';
+  document.getElementById('r-sl').textContent       = d.stop_loss       || '—';
+  document.getElementById('r-tp').textContent       = d.take_profit     || '—';
+  document.getElementById('r-struct').textContent   = d.market_structure|| '—';
+  document.getElementById('r-pa').textContent       = d.price_action    || '—';
+  document.getElementById('r-patterns').textContent = d.patterns        || '—';
+  document.getElementById('r-confluence').textContent = d.confluence    || '—';
+  document.getElementById('r-full').textContent     = d.full_analysis   || '—';
+  document.getElementById('r-risk').textContent     = d.risk            || '—';
+  document.getElementById('r-invalid').textContent  = d.invalidation    || '—';
+
+  if (soundOn) playBeep();
+}
+
+function addHistory(d, tf, inst) {
+  var pair = (d.instrument || inst || '?') + ' ' + tf;
+  var dir  = ((d.direction || 'NEUTRAL') + '').toUpperCase();
+  var now  = new Date();
+  var time = String(now.getHours()).padStart(2,'0') + ':' + String(now.getMinutes()).padStart(2,'0');
+  scanHistory.unshift({ time: time, pair: pair, dir: dir });
+  if (scanHistory.length > 10) scanHistory.pop();
+
+  var html = scanHistory.map(function(h) {
+    var col = h.dir === 'BULLISH' ? 'var(--live)' : h.dir === 'BEARISH' ? 'var(--danger)' : 'var(--warn)';
+    var arrow = h.dir === 'BULLISH' ? '▲' : h.dir === 'BEARISH' ? '▼' : '◆';
+    return '<div class="history-item"><span class="h-time">' + h.time + '</span><span class="h-pair">' + h.pair + '</span><span style="font-size:11px;font-weight:700;color:' + col + '">' + arrow + ' ' + h.dir + '</span></div>';
+  }).join('');
+  document.getElementById('history-list').innerHTML = html;
+}
+
+function playBeep() {
+  try {
+    var ctx = new (window.AudioContext || window.webkitAudioContext)();
+    var osc = ctx.createOscillator();
+    var gain = ctx.createGain();
+    osc.connect(gain); gain.connect(ctx.destination);
+    osc.frequency.value = 880; osc.type = 'sine';
+    gain.gain.setValueAtTime(0.3, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+    osc.start(ctx.currentTime); osc.stop(ctx.currentTime + 0.4);
+  } catch(e) {}
+}
+
+function showToast(msg) {
+  var t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.display = 'block';
+  setTimeout(function(){ t.style.display = 'none'; }, 5000);
+}
+</script>
+</body>
+</html>
