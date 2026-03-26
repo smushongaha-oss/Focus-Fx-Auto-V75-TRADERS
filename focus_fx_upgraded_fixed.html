@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Focus FX AI (Fixed)</title>
+<style>
+body{background:#0b0f14;color:#e6edf3;font-family:Arial;margin:0}
+.container{max-width:900px;margin:auto;padding:20px}
+.card{background:#111827;padding:16px;border-radius:12px;margin-bottom:16px}
+button{padding:10px 16px;border:none;border-radius:8px;background:#22c55e;color:#000;font-weight:bold;cursor:pointer}
+input{margin-bottom:10px}
+.bar{height:10px;background:#1f2937;border-radius:6px;overflow:hidden}
+.bar-inner{height:100%;background:#22c55e;width:0%}
+</style>
+</head>
+<body>
+<div class="container">
+<h2>Focus FX AI (Secure Version)</h2>
+
+<div class="card">
+<input type="file" id="imageInput" accept="image/*"><br>
+<button onclick="analyzeChart()">Analyze Chart</button>
+<p id="status"></p>
+</div>
+
+<div class="card">
+<h3>Analysis</h3>
+<p id="result"></p>
+<div class="bar"><div id="confidenceBar" class="bar-inner"></div></div>
+<p id="rr"></p>
+</div>
+</div>
+
+<script>
+async function analyzeChart(){
+const file = document.getElementById('imageInput').files[0];
+if(!file){alert('Upload image');return;}
+
+document.getElementById('status').innerText = 'Analyzing...';
+
+const reader = new FileReader();
+reader.onload = async function(){
+
+try{
+const controller = new AbortController();
+setTimeout(()=>controller.abort(),15000);
+
+// ⚠️ Replace with YOUR backend endpoint
+const response = await fetch('/api/analyze',{
+method:'POST',
+headers:{'Content-Type':'application/json'},
+signal:controller.signal,
+body:JSON.stringify({image:reader.result})
+});
+
+const data = await response.json();
+
+let entry = parseFloat(data.entry);
+let sl = parseFloat(data.sl);
+let tp = parseFloat(data.tp);
+
+let rr = calcRR(entry,sl,tp);
+
+// Dynamic confidence (based on RR + structure score if exists)
+let confidence = Math.min(95, Math.max(40, rr * 40));
+
+// UI
+
+document.getElementById('result').innerText = `Direction: ${data.direction}\nEntry: ${entry}\nSL: ${sl}\nTP: ${tp}`;
+document.getElementById('confidenceBar').style.width = confidence + '%';
+document.getElementById('rr').innerText = `Risk:Reward → 1 : ${rr}`;
+
+document.getElementById('status').innerText = 'Done';
+
+}catch(e){
+document.getElementById('status').innerText = 'Error or timeout';
+}
+};
+
+reader.readAsDataURL(file);
+}
+
+function calcRR(entry, sl, tp){
+let risk = Math.abs(entry - sl);
+let reward = Math.abs(tp - entry);
+return (reward / risk).toFixed(2);
+}
+</script>
+</body>
+</html>
